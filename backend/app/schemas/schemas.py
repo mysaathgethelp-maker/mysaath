@@ -1,19 +1,17 @@
-from pydantic import BaseModel, EmailStr, field_validator
+from pydantic import BaseModel, EmailStr, validator
 from typing import Optional
 from datetime import datetime
 from app.models.memory import MemoryType, MemoryPriority
 from app.models.subscription import PlanType, SubscriptionStatus
 
 
-# ── Auth ─────────────────────────────────────────────────────────────────────
-
+# ── Auth ──────────────────────────────────────────────────────────────────────
 class UserRegister(BaseModel):
     email: EmailStr
     password: str
 
-    @field_validator("password")
-    @classmethod
-    def password_strength(cls, v: str) -> str:
+    @validator("password")
+    def password_strength(cls, v):
         if len(v) < 8:
             raise ValueError("Password must be at least 8 characters")
         return v
@@ -33,11 +31,12 @@ class UserOut(BaseModel):
     id: int
     email: str
     created_at: datetime
-    model_config = {"from_attributes": True}
+
+    class Config:
+        orm_mode = True
 
 
 # ── Persona ───────────────────────────────────────────────────────────────────
-
 class PersonaCreate(BaseModel):
     display_name: str
     speaking_style: Optional[str] = None
@@ -62,19 +61,19 @@ class PersonaOut(BaseModel):
     core_values: Optional[str]
     avatar_image_url: Optional[str]
     created_at: datetime
-    model_config = {"from_attributes": True}
+
+    class Config:
+        orm_mode = True
 
 
 # ── Memory ────────────────────────────────────────────────────────────────────
-
 class MemoryCreate(BaseModel):
     memory_type: MemoryType
     content: str
     priority: MemoryPriority = MemoryPriority.medium
 
-    @field_validator("content")
-    @classmethod
-    def content_not_empty(cls, v: str) -> str:
+    @validator("content")
+    def content_not_empty(cls, v):
         if not v.strip():
             raise ValueError("Memory content cannot be empty")
         if len(v) > 2000:
@@ -95,17 +94,17 @@ class MemoryOut(BaseModel):
     content: str
     priority: MemoryPriority
     created_at: datetime
-    model_config = {"from_attributes": True}
+
+    class Config:
+        orm_mode = True
 
 
 # ── Chat ──────────────────────────────────────────────────────────────────────
-
 class ChatRequest(BaseModel):
     message: str
 
-    @field_validator("message")
-    @classmethod
-    def message_not_empty(cls, v: str) -> str:
+    @validator("message")
+    def message_not_empty(cls, v):
         if not v.strip():
             raise ValueError("Message cannot be empty")
         if len(v) > 1000:
@@ -123,11 +122,12 @@ class ChatMessageOut(BaseModel):
     role: str
     content: str
     created_at: datetime
-    model_config = {"from_attributes": True}
+
+    class Config:
+        orm_mode = True
 
 
 # ── Subscription ──────────────────────────────────────────────────────────────
-
 class SubscriptionOut(BaseModel):
     id: int
     plan_type: PlanType
@@ -136,11 +136,12 @@ class SubscriptionOut(BaseModel):
     current_period_start: Optional[datetime] = None
     current_period_end: Optional[datetime] = None
     created_at: datetime
-    model_config = {"from_attributes": True}
+
+    class Config:
+        orm_mode = True
 
 
 class InitiateSubscriptionResponse(BaseModel):
-    """Returned after creating a Razorpay subscription object."""
     razorpay_subscription_id: str
-    checkout_url: str          # Razorpay hosted checkout short_url
-    status: str                # Razorpay subscription status (e.g. "created")
+    checkout_url: str
+    status: str
