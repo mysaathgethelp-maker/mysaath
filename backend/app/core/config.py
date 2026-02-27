@@ -1,4 +1,4 @@
-from pydantic import BaseSettings
+from pydantic_settings import BaseSettings
 from typing import List
 
 
@@ -20,9 +20,7 @@ class Settings(BaseSettings):
     FREE_CHAT_DAILY_LIMIT: int = 20
     PREMIUM_CHAT_DAILY_LIMIT: int = 200
 
-    class Config:
-        env_file = ".env"
-        extra = "ignore"
+    model_config = {"env_file": ".env", "extra": "ignore"}
 
 
 settings = Settings()
